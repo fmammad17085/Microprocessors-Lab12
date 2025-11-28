@@ -19,46 +19,53 @@ void TWI_MasterInit(void)
     // Enable TWI module (PRTWI = 0)
     PRR &= ~(1 << PRTWI);  
 
-    // Prescaler = 1
-    TWSR &= ~((1 << TWPS1) | (1 << TWPS0)); 
+    // Prescaler = 1 (Table 21-8.)
+    TWSR &= ~((1 << TWPS1) | (1 << TWPS0)); //Table 21.9.3, TWSR - TWI STATUS REGISTER, contains status codes and prescaler values
 
-    // TWBR formula 21.5.2 → 100 kHz
-    TWBR = 72; 
+    // TWBR formula 21.5.2
+    TWBR = 72;  //TWI BIT RATE REGISTER, controls clock speed
 
     // Enable TWI hardware
-    TWCR = (1 << TWEN); 
+    TWCR = (1 << TWEN);  //Table 21.9.2, TWCR - TWI CONTROL REGISTER, main bits:
+
+    //TWEN — enable TWI hardware
+    //WINT — interrupt flag (set when an operation completes)
+    //TWSTA — send START condition
+    //TWSTO — send STOP condition
+    //TWEA — send ACK after reading
+    //TWINT = 1 - “start this operation now”
 }
 
 
 // SEND START CONDITION 
 void TWI_Start(void)
 {
-    TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN);
-    while (!(TWCR & (1 << TWINT)));  
+    TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN); // Control Register, Start this operation now, START, Enable TWI
+    while (!(TWCR & (1 << TWINT)));  // Wait for START to complete
 }
 
 void TWI_Stop(void)
 {
-    TWCR = (1 << TWINT) | (1 << TWSTO) | (1 << TWEN);
+    TWCR = (1 << TWINT) | (1 << TWSTO) | (1 << TWEN); // Control register, Start this operation now, STOP, enable TWI
 }
 
 void TWI_Write(uint8_t data)
 {
-    TWDR = data;
-    TWCR = (1 << TWINT) | (1 << TWEN);
-    while (!(TWCR & (1 << TWINT))); 
+    TWDR = data; // TWI Data Register
+    TWCR = (1 << TWINT) | (1 << TWEN); //Start this operation now, Enable TWI
+    while (!(TWCR & (1 << TWINT)));  // Wait until transmitted
 }
 
 uint8_t TWI_Read_ACK(void)
 {
-    TWCR = (1 << TWINT) | (1 << TWEA) | (1 << TWEN);
+    TWCR = (1 << TWINT) | (1 << TWEA) | (1 << TWEN); // Contrl register, Start this operation now, send ACK after reading, enable TWI
     while (!(TWCR & (1 << TWINT)));
     return TWDR;
 }
 
 uint8_t TWI_Read_NACK(void)
 {
-    TWCR = (1 << TWINT) | (1 << TWEN);
+    TWCR = (1 << TWINT) | (1 << TWEN);  // same, but no ACK bit
     while (!(TWCR & (1 << TWINT)));
     return TWDR;
 }
@@ -80,7 +87,7 @@ int main(void)
     io_init();
     TWI_MasterInit();
 
-    // ENABLE INTERNAL PULL-UPS ON SDA/SCL   <<<<<<<< ADDED
+    // ENABLE INTERNAL PULL-UPS ON SDA/SCL
     PORTC |= (1 << PC4) | (1 << PC5);
 
     uint8_t button_state = 0;
@@ -98,7 +105,7 @@ int main(void)
         toggle_event = 0;
         if (button_state == 1 && prev_button_state == 0)
         {
-            toggle_event = 1;   // rising edge → ONE press event
+            toggle_event = 1;   // rising edge - ONE press event
         }
         prev_button_state = button_state;
 
