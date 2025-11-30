@@ -53,9 +53,9 @@ int main(void)
     uint8_t received = 0;
     uint8_t button_b_state = 0;
 
-    static uint8_t led_b_state = 0;   // NEW toggle state
-    static uint8_t prev_button_b_state = 0;  // NEW for reply toggle
-    uint8_t toggle_event_b = 0;  // NEW
+    static uint8_t led_b_state = 0;   
+    static uint8_t prev_button_b_state = 0;  
+    uint8_t toggle_event_b = 0;  
 
 
     while (1)
